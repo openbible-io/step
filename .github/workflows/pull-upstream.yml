@@ -1,0 +1,21 @@
+name: Pull upstream
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+
+jobs:
+  pull-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: upstream
+          fetch-depth: 10
+      - name: Pull upstream
+        run: |
+          git remote add upstream 'https://github.com/STEPBible/STEPBible-Data'
+          git pull --ff-only upstream master
+          git push origin upstream
