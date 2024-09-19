@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import { consonants, bookFromEnglish } from '../common.js';
 import { similarity } from './jaro-winkler.js';
 
@@ -15,70 +16,6 @@ export class Ref {
 	eql(other) {
 		return other.book == this.book && other.chapter == this.chapter && other.verse == this.verse;
 	}
-}
-
-/**
- * @param {sources} string
- * @param {ref} Ref
- * @param {word} string
- * @param {text} string
- * @param {strong} string | undefined
- * @param {grammar} string | undefined
- * @param {transliteration} string | undefined
- * @param {translation} string | undefined
- * @param {variant} string | undefined
- */
-export function parseFields(
-	sources,
-	ref,
-	word,
-	text,
-	strong,
-	grammar,
-	transliteration,
-	translation,
-	variant,
-) {
-	const splitRe = /\/|\\/;
-	const hebrews = text.split(splitRe);
-	const strongs = strong.split(splitRe);
-	const grammars = grammar.split(splitRe);
-	const transliterations = transliteration.split(splitRe);
-	const translations = translation.split(splitRe);
-
-	assert(hebrews.length, ref);
-
-	let lang;
-	if (grammars[0].startsWith('H')) lang = 'heb';
-	else if (grammars[0].startsWith('A')) lang = 'arc';
-	else if (grammars[0].startsWith('G')) lang = 'grk';
-	else if (grammars[0]) throw Error(`unknown grammar prefix ${grammars}`);
-	grammars[0] = grammars[0].substring(1);
-
-	const res = [];
-	for (let i = 0; i < hebrews.length; i++) {
-		const text = hebrews[i].trim();
-		if (!text) {
-			word += 1;
-			continue;
-		}
-
-		res.push({
-			variant,
-			sources,
-			book: ref.book,
-			chapter: ref.chapter,
-			verse: ref.verse,
-			word,
-			lang,
-			strong: strongs[i]?.replace(/\{|\}/g, '')?.trim()?.substring(1),
-			text,
-			grammar: grammars[i]?.trim(),
-			transliteration: transliterations[i]?.trim(),
-			translation: translations[i]?.trim(),
-		});
-	}
-	return res;
 }
 
 /**

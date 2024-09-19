@@ -27,7 +27,7 @@ async function parseFile(fname) {
 	mkdirSync(dirname(outpath), { recursive: true });
 	out.pipe(createWriteStream(outpath));
 
-	parser(lineReader, out);
+	await parser(lineReader, out);
 
 	out.end();
 }

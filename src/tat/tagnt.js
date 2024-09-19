@@ -1,22 +1,28 @@
-import { parseFields, Ref } from './common.js';
+import assert from 'node:assert';
+import {  Ref } from './common.js';
 
 // Example row
-// Word & Type: Act.1.8#12=N(K)O
-// Greek: μου (mou)
-// English translation: My
-// dStrongs = Grammar: G3165=P-1GS
-// Dictionary form =  Gloss: ἐγώ=I/we
-// editions: NA28+NA27+Tyn+SBL+WH+Treg
-// Meaning variants: μοι (T=moi) to Me - G3427=P-1DS in: TR+Byz
-// Spelling variants: WH: Ῥομφά ; +Tyn: ̔Ρεφάν ; +Treg: Ῥεφάν ; +Byz+TR: Ῥεμφάν ;
-// Spanish translation: de mí
-// Sub-meaning: my
-// Conjoin word: #12«11:G1510
-// sStrong+Instance: G3165
-// Alt Strongs: G3427, , G3450
-// ???: v μοι  (<i>moi</i>) 'to Me' occurs in traditional manuscripts (TR+Byz) instead of μου  (<i>mou</i>) 'My' in older manuscripts (NA28+NA27+Tyn+SBL+WH+Treg)
+// Word & Type: Rev.9.16#08=N(k)O
+// Greek: δισμυριάδες (dismuriades)
+// English translation: twice ten thousand
+// dStrongs = Grammar: G1364=ADV + G3461=N-NPF
+// Dictionary form = Gloss: δίς=twice + μυριάς=myriad
+// editions: NA28+NA27+Tyn+SBL+WH
+// Meaning variants: δύο μυριάδες (t=duo muriades) twenty thousand - G1417=A-NUI + G3461=N-NPF in: Treg+TR
+// Spelling variants: WH: δὶς μυριάδες ;
+// Spanish translation: diez miles
+// Sub-meaning: twice + myriads
+// Conjoin word: #08
+// sStrong+Instance: G3461_A, G1364
+// Alt Strongs: G1417, G6019
+// Note: 
 
 /**
+ *
+ * Unfortunately cannot split on morphemes like with Hebrew because grammar splits do not follow
+ * the greek word. Some are also out of order like:
+ * - κἀμοὶ G1473=P-1DS + G2532=CONJ instead of G2532=CONJ + G1473=P-1DS
+ *
  * @param {ReadlineInterface} lineReader
  * @param {fastcsv.CsvFormatterStream<fastcsv.FormatterRow, fastcsv.FormatterRow>} out
  */
@@ -38,12 +44,12 @@ export async function parseTagnt(lineReader, out) {
 				_,
 				greek_and_transliteration,
 				translation,
-				strong_and_grammar,
+				strong_and_grammars,
 				dict_form_and_gloss,
-				editions,
+				sources,
 				meaning_variant,
 				spelling_variant,
-				translation_spanish,
+				translation_es,
 				submeaning,
 				conjoin,
 				sstrong,
@@ -51,67 +57,51 @@ export async function parseTagnt(lineReader, out) {
 				note,
 			] = fields;
 
-			if (spelling_variant) console.log(spelling_variant);
+			let match = greek_and_transliteration.match(/([^\(]*) \(([^\)]*)\)/);
+			assert(match.length == 3, greek_and_transliteration);
+			const greek = match[1];
+			const transliteration = match[2];
 
-			// const morphemes = parseFields(
-			// 	ref.sources,
-			// 	ref,
-			// 	word,
-			// 	greek_and_transliteration,
-			// 	strong,
-			// 	grammar,
-			// 	translation,
-			// 	translation,
-			// );
+			const morphemes = [parseFields(ref, word, sources, greek, {
+				strong_and_grammars,
+				dict_form_and_gloss, 
+				transliteration,
+				translation,
+				translation_es,
+				submeaning,
+				conjoin,
+				sstrong,
+				alt_strong,
+				note,
+			})];
+			
+			meaning_variant.split('¦').filter(Boolean).forEach(variant => {
+				// δύο μυριάδες (t=duo muriades) twenty thousand - G1417=A-NUI + G3461=N-NPF in: Treg+TR
+				const match = variant.match(/([^\(]*) \([^=]*=([^\)]*)\) (.*) - (.*) in: (.*)$/);
+				if (match?.length != 6) throw Error(variant);
 
-			// meaning_variant.split('¦').filter(Boolean).forEach(variant => {
-			// 	// K= 'o.ho.Lo/h (אָהֳלֹ/ה\׃) "tent/ his" (H0168G/H9023\H9016=HNcbsc/Sp3ms)
-			// 	const match = variant.match(/([^ ]*)= ([^ ]*) \(([^\)]*)\) "(.*)" \(([^=]*)=([^\)]*)\)/);
-			// 	if (match?.length != 7) throw Error(variant);
+				morphemes.push(parseFields(ref, word, match[5], match[1], {
+					strong_and_grammars: match[4],
+					variant: 'meaning',
+					transliteration: match[2],
+					translation: match[3],
+				}));
+			});
+			
+			spelling_variant.split(';').map(v => v.trim()).filter(Boolean).forEach(variant => {
+				// WH: δὶς μυριάδες ;
+				const match = variant.match(/([^:]*): (.*)$/);
+				if (match?.length != 3) throw Error(variant);
 
-			// 	morphemes.push(...parseFields(
-			// 		match[1],
-			// 		ref,
-			// 		word,
-			// 		match[3],
-			// 		match[5],
-			// 		match[6],
-			// 		match[2],
-			// 		match[4],
-			// 		'meaning',
-			// 	));
-			// });
-			// spelling_variant.split(';').filter(Boolean).forEach(variant => {
-			// 	// L= אָהֳלֹֽ/ה\׃ ¦ ;
-			// 	if (variant.trim() == ';') return; // idk why these are here
+				morphemes.push({
+					...morphemes[0],
+					variant: 'spelling',
+					text: match[2],
+					sources: fmtSources(match[1]),
+				});
+			});
 
-			// 	const match = variant.match(/([^ ]*)= ([^ ]*)/);
-			// 	if (match?.length != 3) throw Error(variant);
-
-			// 	// We want to align these. Goal is minimal manual alignment.
-			// 	const unaligned = parseFields(
-			// 		match[1],
-			// 		ref,
-			// 		word,
-			// 		match[2],
-			// 		'',
-			// 		'',
-			// 		'',
-			// 		'',
-			// 		'spelling',
-			// 	);
-			// 	unaligned.forEach(u => align(u, morphemes, {
-			// 		lang: true,
-			// 		strong: true,
-			// 		grammar: true,
-			// 		transliteration: true,
-			// 		translation: true,
-			// 	}));
-			// 	morphemes.push(...unaligned);
-			// });
-
-			// morphemes.forEach(m => out.write(m));
-			// word = morphemes[morphemes.length - 1].word;
+			morphemes.forEach(m => out.write(m));
 		} catch (e) {
 			console.error(line);
 			throw e;
@@ -119,3 +109,49 @@ export async function parseTagnt(lineReader, out) {
 	}
 }
 
+function parseFields(ref, word, sources, greek, fields) {
+	const strongs = [];
+	const grammars = [];
+	// G2443=CONJ + G5101=I-NSN
+	if (fields.strong_and_grammars) {
+		fields.strong_and_grammars.split('+').forEach(sg => {
+			const split = sg.split('=');
+			assert(split.length == 2, sg);
+			strongs.push(split[0].trim().substring(1));
+			grammars.push(split[1].trim());
+		});
+		delete fields.strong_and_grammars;
+	}
+	const dict_forms = [];
+	const glosses = [];
+	if (fields.dict_form_and_gloss) {
+		fields.dict_form_and_gloss.split('+').forEach(dg => {
+			const split = dg.split('=');
+			assert(split.length == 2, dg);
+			dict_forms.push(split[0].trim());
+			glosses.push(split[1].trim());
+		});
+		delete fields.dict_form_and_gloss;
+	}
+	if (fields.note?.trim() == '^' || fields.note?.trim() == 'v') fields.note = '';
+
+	return {
+		variant: fields.variant,
+		sources: fmtSources(sources),
+		book: ref.book,
+		chapter: ref.chapter,
+		verse: ref.verse,
+		word,
+		lang: 'grk',
+		text: greek,
+		strongs: strongs.join(','),
+		grammars: grammars.join(','),
+		dict_forms: dict_forms.join(','),
+		glosses: glosses.join(','),
+		...fields,
+	};
+}
+
+function fmtSources(sources) {
+	return sources.split('+').map(s => s.trim()).join(',');
+}
