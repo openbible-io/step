@@ -1,0 +1,19 @@
+{
+	"name": "@openbible/step",
+	"version": "0.0.0",
+	"description": "STEP Bible data and parser.",
+	"type": "module",
+	"license": "CC-BY-4.0",
+	"repository": {
+		"url": "git+https://github.com/openbible-io/step.git"
+	},
+	"scripts": {},
+	"devDependencies": {
+		"fast-csv": "^5.0.1"
+	},
+	"openbible": {
+		"downloadUrl": "https://github.com/STEPBible/STEPBible-Data",
+		"publisher": "STEPBible.org",
+		"publisherUrl": "https://www.stepbible.org/"
+	}
+}
