@@ -2,7 +2,7 @@
 set -e
 
 npm ci
-node build.js
+npm run build
 
 # Do a release
 git fetch --tags

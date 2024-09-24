@@ -1,13 +1,15 @@
 {
 	"name": "@openbible/step",
 	"version": "0.0.0",
-	"description": "STEP Bible data and parser.",
+	"description": "STEPBible-Data parser and published files.",
 	"type": "module",
 	"license": "CC-BY-4.0",
 	"repository": {
 		"url": "git+https://github.com/openbible-io/step.git"
 	},
-	"scripts": {},
+	"scripts": {
+		"build": "node src/main.js ./data/Translators\\ Amalgamated\\ OT+NT/*.txt"
+	},
 	"devDependencies": {
 		"fast-csv": "^5.0.1"
 	},
