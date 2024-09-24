@@ -1,4 +1,3 @@
-import assert from 'node:assert';
 import { consonants, bookFromEnglish } from '../common.js';
 import { similarity } from './jaro-winkler.js';
 

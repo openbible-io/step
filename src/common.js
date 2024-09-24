@@ -1,6 +1,4 @@
-/**
- * @param {string} str english, hebrew, or greek
- */
+/** @param {string} str english, hebrew, or greek */
 export function consonants(str) {
 	return str
 		.replace(/[aeiou]*/gi, '')
@@ -8,6 +6,7 @@ export function consonants(str) {
 		.replace(/[^\u05d0-\u05ea]*/g, '')
 }
 
+/** @param {string} eng english book name */
 export function bookFromEnglish(eng) {
 	eng = eng.toLowerCase();
 	if (eng.startsWith("gen")) return "gen";

@@ -16,11 +16,17 @@ async function parseFile(fname) {
 	if (firstLine.charCodeAt(0) == 0xfeff) firstLine = firstLine.substring(1);
 
 	let parser;
-	if (firstLine.startsWith('TAHOT')) parser = parseTahot;
-	else if (firstLine.startsWith('TAGNT')) parser = parseTagnt;
+	let id;
+	if (firstLine.startsWith('TAHOT')) {
+		parser = parseTahot;
+		id = 'heb_tat';
+	} else if (firstLine.startsWith('TAGNT')) {
+		parser = parseTagnt;
+		id = 'grc_tat';
+	}
 	else throw Error(`${fname} has unknown file type`);
 
-	const outpath = join(outdir, 'bibles', 'tat', `${basename(fname).split(' ')[1]}.csv`);
+	const outpath = join(outdir, 'bibles', id, `${basename(fname).split(' ')[1]}.csv`);
 	console.log(fname, '->', outpath);
 
 	const out = fastcsv.format({ headers: true, delimiter: '|' });
