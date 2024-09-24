@@ -14,8 +14,20 @@
 		"fast-csv": "^5.0.1"
 	},
 	"openbible": {
-		"downloadUrl": "https://github.com/openbible-io/STEPBible-Data",
-		"publisher": "STEPBible.org",
-		"publisherUrl": "https://www.stepbible.org/"
+		"bibles": {
+			"heb_tat": {
+				"title": "Translators Amalgamated Old Testament",
+				"downloadUrl": "https://github.com/openbible-io/STEPBible-Data",
+				"publisher": "STEPBible.org",
+				"publisherUrl": "https://www.stepbible.org/",
+				"license": "CC-BY-4.0"
+			},
+			"grc_tat": {
+				"title": "Translators Amalgamated New Testament",
+				"downloadUrl": "https://github.com/openbible-io/STEPBible-Data",
+				"publisher": "STEPBible.org",
+				"publisherUrl": "https://www.stepbible.org/",
+				"license": "CC-BY-4.0"
+			}
 	}
 }
