@@ -5,7 +5,7 @@
 	"type": "module",
 	"license": "CC-BY-4.0",
 	"repository": {
-		"url": "git+https://github.com/openbible-io/step.git"
+		"url": "git+https://github.com/openbible-io/step-parser.git"
 	},
 	"scripts": {
 		"build": "node src/main.js ./data/Translators\\ Amalgamated\\ OT+NT/*.txt"
@@ -14,7 +14,7 @@
 		"fast-csv": "^5.0.1"
 	},
 	"openbible": {
-		"downloadUrl": "https://github.com/STEPBible/STEPBible-Data",
+		"downloadUrl": "https://github.com/openbible-io/STEPBible-Data",
 		"publisher": "STEPBible.org",
 		"publisherUrl": "https://www.stepbible.org/"
 	}

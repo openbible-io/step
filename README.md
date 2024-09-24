@@ -88,6 +88,18 @@ are not consistent and hence not parsable. See [methodology](https://docs.google
     - v: Variant
    - ^: Extra text
 
+## Running
+Optionally pull the latest data.
+```sh
+cd data && git pull
+```
+
+Transform downloaded files into pipe-separated `dist/bibles/*/*.csv`
+```sh
+npm install
+npm run build
+```
+
 ## Continuous Integration
 The `upstream` branch is a fork pulled daily. If there's a difference will push to master, but
 won't build or release until reviewed.
