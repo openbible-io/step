@@ -17,22 +17,24 @@ export class Ref {
 	}
 }
 
+export const punctuation = {
+	'־': '9014',
+	'׀': '9015',
+	'׃': '9016',
+};
+
 /**
  * Enrich `m` with data from `morphemes`.
  *
  * @param {ReturnType<parseFields>[0]} m
  * @param {ReturnType<parseFields>} morphemes
+ * @param {string[]} fields
  */
 export function align(m, morphemes, fields) {
-	const punctuation = {
-		'־': '9014',
-		'׀': '9015',
-		'׃': '9016',
-	};
-
 	// We often see punctuation differences
 	if (punctuation[m.text]) {
-		if (fields.strong) m.strong = punctuation[m.text];
+		if (fields.includes('strong')) m.strong = punctuation[m.text];
+		if (fields.includes('lang')) m.lang = morphemes[0].lang;
 		return;
 	}
 	const similarities = morphemes.map(m2 => punctuation[m2.text] ? 0 : Math.max(
@@ -47,14 +49,10 @@ export function align(m, morphemes, fields) {
 		return acc;
 	}, { i: -1, score: 0 });
 	if (mostSimilar.score >= .7) {
-		if (mostSimilar.score != 1.0) {
-			console.log(m.book, m.chapter, m.verse, m.word, m.text, 'matches', morphemes[mostSimilar.i].text, mostSimilar.score.toFixed(2));
-		}
-		Object.entries(fields)
-			.filter(([_, v]) => v)
-			.forEach(([k]) => m[k] = morphemes[mostSimilar.i][k]);
+		fields.forEach(f => m[f] = morphemes[mostSimilar.i][f]);
 	} else {
 		if (m.variant == 'spelling') {
+			// If we don't enrich these we are missing too much.
 			console.error(morphemes.map(m2 => ({
 				...m2,
 				distance1: similarity(m.text, m2.text),
@@ -63,6 +61,18 @@ export function align(m, morphemes, fields) {
 			throw Error(`Could not align ${JSON.stringify(m)}`);
 		}
 	}
+}
+
+/** @param {string} v */
+export function splitVariants(v) {
+	return v.split(/¦|;/).map(v => v.trim()).filter(Boolean);
+}
+
+export function fmtMorpheme(m) {
+	let res = `${m.book}.${m.chapter}.${m.verse}`;
+	res += `#${m.word.toString().padStart(2, '0')} ${m.text}`;
+	if (m.variant) res += ` (${m.variant})`;
+	return res;
 }
 
 /**
