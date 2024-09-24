@@ -26,7 +26,7 @@ async function parseFile(fname) {
 	}
 	else throw Error(`${fname} has unknown file type`);
 
-	const outpath = join(outdir, 'bibles', id, `${basename(fname).split(' ')[1]}.csv`);
+	const outpath = join(outdir, id, `${basename(fname).split(' ')[1]}.csv`);
 	console.log(fname, '->', outpath);
 
 	const out = fastcsv.format({ headers: true, delimiter: '|' });

@@ -94,7 +94,7 @@ Optionally pull the latest data.
 cd data && git pull
 ```
 
-Transform downloaded files into pipe-separated `dist/bibles/*/*.csv`
+Parse files from `data` into `dist`
 ```sh
 npm install
 npm run build
