@@ -29,7 +29,7 @@
 				"publisher": "STEPBible.org",
 				"publisherUrl": "https://www.stepbible.org/",
 				"license": "CC-BY-4.0",
-				"files": [ "dist/heb_tat/*.csv" ]
+				"files": [ "dist/grc_tat/*.csv" ]
 			}
 		}
 	}
