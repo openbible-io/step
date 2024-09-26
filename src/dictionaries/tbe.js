@@ -1,4 +1,4 @@
-export async function parseTbesh(lineReader, out) {
+export async function parse(lineReader, out) {
 	for await (const line of lineReader) {
 		const parsed = parseLine(line);
 		if (parsed) out.write(parsed);
@@ -47,8 +47,10 @@ function parseLine(line) {
 			cur = next;
 		}
 
-		if (depth == 0) notes.push(text);
-		else cur.push(text);
+		if (text) {
+			if (depth == 0) notes.push(text);
+			else cur.push(text);
+		}
 		curDepth = depth;
 	});
 
@@ -62,23 +64,35 @@ function parseLine(line) {
 		morph,
 		gloss,
 		meaning: JSON.stringify(root),
-		notes,
+		notes: JSON.stringify(notes),
 	}
 }
 
 function renderMeaning(depth, m) {
 	let res = '';
 	if (Array.isArray(m)) {
-		res += `<ol class="${depth % 2 ? 'odd' : 'even'}">`;
+		const type = 'ol';
+		res += `<${type} class="${depth % 2 ? 'odd' : 'even'}">`;
 		for (let i = 0; i < m.length; i++) {
 			const wrap = !Array.isArray(m[i]);
 			if (wrap) res += '<li>';
 			res += renderMeaning(depth + 1, m[i]);
 			if (wrap) res += '</li>';
 		}
-		res += '</ol>';
+		res += `</${type}>`;
 	}
 	else res += m;
 
+	return res;
+}
+
+function render(row) {
+	let res = '';
+	res += renderMeaning(0, row.meaning);
+	if (row.notes.length) {
+		res += '<ul>';
+		res += row.notes.map(n => `<li>${n}</li>`);
+		res += '</ul>';
+	}
 	return res;
 }

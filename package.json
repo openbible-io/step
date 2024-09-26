@@ -8,7 +8,7 @@
 		"url": "git+https://github.com/openbible-io/step.git"
 	},
 	"scripts": {
-		"build": "node src/main.js ./data/Translators\\ Amalgamated\\ OT+NT/*.txt"
+		"build": "node src/main.js ./data/Translators\\ Amalgamated\\ OT+NT/*.txt ./data/Lexicons/TBE*.txt"
 	},
 	"devDependencies": {
 		"fast-csv": "^5.0.1"

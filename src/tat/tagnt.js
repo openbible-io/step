@@ -26,7 +26,7 @@ import {  Ref, splitVariants } from './common.js';
  * @param {ReadlineInterface} lineReader
  * @param {fastcsv.CsvFormatterStream<fastcsv.FormatterRow, fastcsv.FormatterRow>} out
  */
-export async function parseTagnt(lineReader, out) {
+export async function parse(lineReader, out) {
 	let lastRef;
 	let word = 0;
 	for await (const line of lineReader) {

@@ -18,7 +18,7 @@ import { Ref, align, fmtMorpheme, splitVariants, punctuation  } from './common.j
  * @param {ReadlineInterface} lineReader
  * @param {fastcsv.CsvFormatterStream<fastcsv.FormatterRow, fastcsv.FormatterRow>} out
  */
-export async function parseTahot(lineReader, out) {
+export async function parse(lineReader, out) {
 	let lastRef;
 	let word;
 	for await (const line of lineReader) {
