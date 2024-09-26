@@ -4,7 +4,7 @@ import { open } from 'node:fs/promises';
 import fastcsv from 'fast-csv';
 import { parse as parseTahot } from './tat/tahot.js';
 import { parse as parseTagnt } from './tat/tagnt.js';
-import { parse as parseTbe } from './dictionaries/tbe.js';
+import { parse as parseTbl } from './dictionaries/tbl.js';
 
 const outdir = 'dist';
 
@@ -101,10 +101,10 @@ async function parseFile(fname) {
 		if (n == -1) throw Error(`could not extract book from ${basename(fname)}`);
 		outpath = join(outdir, 'grc_tat', `${(n + 1).toString().padStart(2, '0')}-${bookRange}.csv`);
 	} else if (firstLine.startsWith('TBESH')) {
-		parser = parseTbe;
+		parser = parseTbl;
 		outpath = join(outdir, 'tbesh.csv');
 	} else if (firstLine.startsWith('TBESG')) {
-		parser = parseTbe;
+		parser = parseTbl;
 		outpath = join(outdir, 'tbesg.csv');
 	} else {
 		throw Error(`${fname} has unknown file type`);
