@@ -49,8 +49,5 @@
 				]
 			}
 		}
-	},
-	"dependencies": {
-		"@openbible/step": "^0.0.7"
 	}
 }
