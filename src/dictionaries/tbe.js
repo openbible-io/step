@@ -6,7 +6,7 @@ export async function parse(lineReader, out) {
 }
 
 function parseLine(line) {
-	const [
+	let [
 		eStrong,
 		dStrongAndReason,
 		uStrong,
@@ -52,6 +52,14 @@ function parseLine(line) {
 			else cur.push(text);
 		}
 		curDepth = depth;
+	});
+
+	uStrong = uStrong.replaceAll(',', '');
+	[eStrong, dStrong, uStrong].forEach(s => {
+		if (!s.match(/[HG]\d{4}[A-Za-z]?/)) {
+			console.error(s, line);
+			throw Error('invalid strong');
+		}
 	});
 
 	return {
