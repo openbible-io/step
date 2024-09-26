@@ -11,9 +11,9 @@ function parseLine(line) {
 		dStrongAndReason,
 		uStrong,
 		word,
-		transliteration,
+		transliteration_en,
 		morph,
-		gloss,
+		gloss_en,
 		meaning
 	] = line.split('\t').map(f => f.trim());
 
@@ -68,11 +68,11 @@ function parseLine(line) {
 		reason,
 		uStrong,
 		hebrew: word,
-		transliteration,
+		transliteration_en,
 		morph,
-		gloss,
-		meaning: JSON.stringify(root),
-		notes: JSON.stringify(notes),
+		gloss_en,
+		meaning_en: JSON.stringify(root),
+		notes_en: JSON.stringify(notes),
 	}
 }
 
