@@ -30,7 +30,22 @@ export async function parseTagnt(lineReader, out) {
 	let lastRef;
 	let word = 0;
 	for await (const line of lineReader) {
-		const fields = line.split('\t').map(f => f.trim());
+		const [
+			_,
+			greek_and_transliteration_en,
+			translation_en,
+			strongs_and_grammars,
+			dict_form_and_gloss,
+			sources,
+			meaning_variant,
+			spelling_variant,
+			translation_es,
+			submeaning,
+			conjoin,
+			amb_strongs,
+			alt_strongs,
+			note,
+		] = line.split('\t').map(f => f.trim());
 		let ref;
 		try {
 			ref = new Ref(fields[0]);
@@ -40,23 +55,6 @@ export async function parseTagnt(lineReader, out) {
 		lastRef = ref;
 
 		try {
-			const [
-				_,
-				greek_and_transliteration_en,
-				translation_en,
-				strongs_and_grammars,
-				dict_form_and_gloss,
-				sources,
-				meaning_variant,
-				spelling_variant,
-				translation_es,
-				submeaning,
-				conjoin,
-				amb_strongs,
-				alt_strongs,
-				note,
-			] = fields;
-
 			const match = greek_and_transliteration_en.match(/([^\(]*) \(([^\)]*)\)/);
 			assert(match.length == 3, greek_and_transliteration_en);
 			const greek = match[1];

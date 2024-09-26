@@ -22,7 +22,16 @@ export async function parseTahot(lineReader, out) {
 	let lastRef;
 	let word;
 	for await (const line of lineReader) {
-		const fields = line.split('\t');
+		const [
+			_,
+			hebrew,
+			transliteration_en,
+			translation_en,
+			strongs,
+			grammar,
+			meaning_variant,
+			spelling_variant,
+		] = line.split('\t');
 		let ref;
 		try {
 			ref = new Ref(fields[0]);
@@ -31,17 +40,6 @@ export async function parseTahot(lineReader, out) {
 		lastRef = ref;
 
 		try {
-			const [
-				_,
-				hebrew,
-				transliteration_en,
-				translation_en,
-				strongs,
-				grammar,
-				meaning_variant,
-				spelling_variant,
-			] = fields;
-
 			const morphemes = parseFields(
 				ref.sources,
 				ref,

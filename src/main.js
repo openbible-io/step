@@ -4,6 +4,7 @@ import { open } from 'node:fs/promises';
 import fastcsv from 'fast-csv';
 import { parseTahot } from './tat/tahot.js';
 import { parseTagnt } from './tat/tagnt.js';
+import { parseTbesh } from './dictionaries/tbesh.js';
 
 const outdir = 'dist';
 
@@ -84,22 +85,31 @@ async function parseFile(fname) {
 	let firstLine = (await lineReader[Symbol.asyncIterator]().next()).value;
 	if (firstLine.charCodeAt(0) == 0xfeff) firstLine = firstLine.substring(1);
 
+	let outpath;
 	let parser;
-	let id;
+
+	const bookRange = basename(fname).split(' ')?.[1];
+	const firstBook = bookRange?.split('-')?.[0]?.toLowerCase();
+	const n = order.indexOf(firstBook);
+
 	if (firstLine.startsWith('TAHOT')) {
 		parser = parseTahot;
-		id = 'heb_tat';
+		if (n == -1) throw Error(`could not extract book from ${basename(fname)}`);
+		outpath = join(outdir, 'heb_tat', `${(n + 1).toString().padStart(2, '0')}-${bookRange}.csv`);
 	} else if (firstLine.startsWith('TAGNT')) {
 		parser = parseTagnt;
-		id = 'grc_tat';
+		if (n == -1) throw Error(`could not extract book from ${basename(fname)}`);
+		outpath = join(outdir, 'grc_tat', `${(n + 1).toString().padStart(2, '0')}-${bookRange}.csv`);
+	} else if (firstLine.startsWith('TBESH')) {
+		parser = parseTbesh;
+		outpath = join(outdir, 'tbesh.csv');
+	} else if (firstLine.startsWith('TBESG')) {
+		parser = parseTbesh;
+		outpath = join(outdir, 'tbesg.csv');
+	} else {
+		throw Error(`${fname} has unknown file type`);
 	}
-	else throw Error(`${fname} has unknown file type`);
 
-	const bookRange = basename(fname).split(' ')[1];
-	const firstBook = bookRange.split('-')[0].toLowerCase();
-	const n = order.indexOf(firstBook);
-	if (n == -1) throw Error(`unknown book ${firstBook}`);
-	const outpath = join(outdir, id, `${(n + 1).toString().padStart(2, '0')}-${bookRange}.csv`);
 	console.log(fname, '->', outpath);
 
 	const out = fastcsv.format({ headers: true, delimiter: '|' });

@@ -35,6 +35,19 @@
 					"dist/grc_tat/*.csv"
 				]
 			}
+		},
+		"dictionaries": {
+			"tbl": {
+				"title": "Translators Brief Lexicon of Extended Strongs",
+				"downloadUrl": "https://github.com/openbible-io/STEPBible-Data",
+				"publisher": "STEPBible.org",
+				"publisherUrl": "https://www.stepbible.org/",
+				"license": "CC-BY-4.0",
+				"files": [
+					"dist/tbesh.csv",
+					"dist/tbesg.csv"
+				]
+			}
 		}
 	},
 	"dependencies": {
