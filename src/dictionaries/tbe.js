@@ -65,8 +65,8 @@ function parseLine(line) {
 	return {
 		eStrong,
 		dStrong,
-		reason,
 		uStrong,
+		reason,
 		hebrew: word,
 		morph,
 		transliteration_en,
