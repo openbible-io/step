@@ -1,81 +1,13 @@
 import { mkdirSync, createWriteStream } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { open } from 'node:fs/promises';
+import { books } from '@openbible/core';
 import fastcsv from 'fast-csv';
 import { parse as parseTahot } from './tat/tahot.js';
 import { parse as parseTagnt } from './tat/tagnt.js';
 import { parse as parseTbl } from './dictionaries/tbl.js';
 
 const outdir = 'dist';
-
-const order = [
-"gen",
-"exo",
-"lev",
-"num",
-"deu",
-"jos",
-"jdg",
-"rut",
-"1sa",
-"2sa",
-"1ki",
-"2ki",
-"1ch",
-"2ch",
-"ezr",
-"neh",
-"est",
-"job",
-"psa",
-"pro",
-"ecc",
-"sng",
-"isa",
-"jer",
-"lam",
-"ezk",
-"dan",
-"hos",
-"jol",
-"amo",
-"oba",
-"jon",
-"mic",
-"nam",
-"hab",
-"zep",
-"hag",
-"zec",
-"mal",
-"mat",
-"mrk",
-"luk",
-"jhn",
-"act",
-"rom",
-"1co",
-"2co",
-"gal",
-"eph",
-"php",
-"col",
-"1th",
-"2th",
-"1ti",
-"2ti",
-"tit",
-"phm",
-"heb",
-"jas",
-"1pe",
-"2pe",
-"1jn",
-"2jn",
-"3jn",
-"jud",
-"rev",
-];
 
 /** @param {string} fname */
 async function parseFile(fname) {
@@ -90,7 +22,7 @@ async function parseFile(fname) {
 
 	const bookRange = basename(fname).split(' ')?.[1];
 	const firstBook = bookRange?.split('-')?.[0]?.toLowerCase();
-	const n = order.indexOf(firstBook);
+	const n = books.protestant.indexOf(firstBook);
 
 	if (firstLine.startsWith('TAHOT')) {
 		parser = parseTahot;

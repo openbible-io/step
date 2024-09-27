@@ -11,6 +11,7 @@
 		"build": "node src/main.js ./data/Translators\\ Amalgamated\\ OT+NT/*.txt ./data/Lexicons/TBE*.txt"
 	},
 	"devDependencies": {
+		"@openbible/core": "^0.0.4",
 		"fast-csv": "^5.0.1"
 	},
 	"openbible": {

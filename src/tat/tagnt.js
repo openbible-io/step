@@ -31,7 +31,7 @@ export async function parse(lineReader, out) {
 	let word = 0;
 	for await (const line of lineReader) {
 		const [
-			_,
+			maybe_ref,
 			greek_and_transliteration_en,
 			translation_en,
 			strongs_and_grammars,
@@ -48,8 +48,10 @@ export async function parse(lineReader, out) {
 		] = line.split('\t').map(f => f.trim());
 		let ref;
 		try {
-			ref = new Ref(fields[0]);
-		} catch { continue; }
+			ref = new Ref(maybe_ref);
+		} catch {
+			continue;
+		}
 		if (!lastRef?.eql(ref)) word = 0;
 		word++;
 		lastRef = ref;

@@ -1,3 +1,5 @@
+import { books } from '@openbible/core';
+
 export async function parse(lineReader, out) {
 	for await (const line of lineReader) {
 		const parsed = parseLine(line);
@@ -25,12 +27,16 @@ function parseLine(line) {
 	const root = [];
 	let cur = root;
 	let curDepth = 1;
-	const defs = meaning.split(/<br>/i).map(d => d.trim());
+	const defs = meaning.split(/<br\s*\/?>/i).map(d => d.trim());
 
 	defs.forEach(d => {
-		let match = d.match(/^((:?[\d]+|[a-z]+)*)\) (.*)/);
+		let match = d.match(/^_*((:?[\d]+|[a-z]+|[\(])*)[\)\.] (.*)/);
 		const number = match ? match[1] : undefined;
-		const text = match ? match[3] : d;
+		const text = (match ? match[3] : d)
+			.replace(
+				/<ref=['"]([A-Za-z]{3})\.(\d+)\.(\d+)[^'"]*['"]>[^<]*<\/ref>/g,
+				(_, b, c, v) => `${books.fromEnglish(b)} ${c}:${v}`
+			);
 
 		let depth = 0;
 		if (number) {
@@ -67,7 +73,7 @@ function parseLine(line) {
 		dStrong,
 		uStrong,
 		reason,
-		hebrew: word,
+		word,
 		morph,
 		transliteration_en,
 		gloss_en,
@@ -104,3 +110,7 @@ function render(row) {
 	}
 	return res;
 }
+
+//console.log(parseLine(
+//`G0032	G0032G =	G0032G	ἄγγελος	angelos	G:N-M	angel	 <b>ἄγγελος</b>, -ου, ὁ, <BR /> [in LXX chiefly for מַלְאָךְ ;] <BR /> __1. <b>a messenger</b>, <b>one sent</b>: <ref='Mat.11.10'>Mat.11:10</ref>, <ref='Jas.22.25'>Jas.22:25</ref>.<BR /> __2. As in LXX, in the special sense of <b>angel</b>, a spiritual, heavenly being, attendant upon God and employed as his messenger to men, to make known his purposes, as <ref='Luk.1.11'>Luk.1:11</ref>, or to execute them, as <ref='Mat.4.6.'>Mat.4:6.</ref> The ἄ. in <ref='Rev.1.20-2:1'>Rev.1:20-2:1</ref>, al., is variously understood as <BR />__(1) <b>a messenger or delegate, </b><BR /> __(2) <b>a bishop or ruler, </b><BR /> __(3) <b>a guardian angel, </b><BR /> __(4) the prevailing spirit of each church, i.e. the Church itself. (Cf. Swete, <i>Ap</i>)., in l.; DB, iv, 991; Thayer, see word; Cremer, 18; MM, <i>VGT</i>, see word)<BR /> (AS)`
+//))

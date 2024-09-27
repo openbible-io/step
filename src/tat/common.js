@@ -1,4 +1,4 @@
-import { consonants, bookFromEnglish } from '../common.js';
+import { books } from '@openbible/core';
 import { similarity } from './jaro-winkler.js';
 
 export class Ref {
@@ -6,7 +6,7 @@ export class Ref {
 		// TAHOT: Gen.1.8(Gen.3.4)#12=L(K)
 		// TAGNT: Act.1.8#12=N(K)O
 		const bcv = str.match(/^([^.]*)\.([^.]*)\.([^.]*)/);
-		this.book = bookFromEnglish(bcv[1]);
+		this.book = books.fromEnglish(bcv[1]);
 		this.chapter = parseInt(bcv[2]);
 		this.verse = parseInt(bcv[3]);
 		this.sources = str.match(/=(.*)$/)[1];
@@ -73,6 +73,14 @@ export function fmtMorpheme(m) {
 	res += `#${m.word.toString().padStart(2, '0')} ${m.text}`;
 	if (m.variant) res += ` (${m.variant})`;
 	return res;
+}
+
+/** @param {string} str english, hebrew, or greek */
+export function consonants(str) {
+	return str
+		.replace(/[aeiou]*/gi, '')
+		.replace(/[αεηιουωᾱηῑωῡηω]*/gi, '')
+		.replace(/[^\u05d0-\u05ea]*/g, '')
 }
 
 /**
