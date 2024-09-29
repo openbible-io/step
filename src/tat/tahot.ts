@@ -1,5 +1,7 @@
 import assert from 'node:assert';
-import { Ref, align, fmtMorpheme, splitVariants, punctuation  } from './common.js';
+import { Ref, align, fmtMorpheme, splitVariants, punctuation, type Morpheme } from './common.ts';
+import { type LineReader, type Out } from '../main.ts';
+
 // Example row
 // Eng (Heb) Ref & Type: Gen.12.8#08=Q(K)
 // Hebrew: אָהְָל֑/וֹ
@@ -14,14 +16,11 @@ import { Ref, align, fmtMorpheme, splitVariants, punctuation  } from './common.j
 // Conjoin word:
 // Expanded strongs tags: {H0168G=אֹ֫הֶל=: tent»tent:1_tent}/H9023=Ps3m=his
 
-/**
- * @param {ReadlineInterface} lineReader
- * @param {fastcsv.CsvFormatterStream<fastcsv.FormatterRow, fastcsv.FormatterRow>} out
- */
-export async function parse(lineReader, out) {
-	let lastRef;
-	let word;
+export async function parse(lineReader: LineReader, out: Out) {
+	let lastRef: Ref | undefined;
+	let word = 1;
 	for await (const line of lineReader) {
+		if (line.startsWith('#')) continue;
 		const [
 			maybe_ref,
 			hebrew,
@@ -32,12 +31,9 @@ export async function parse(lineReader, out) {
 			meaning_variant,
 			spelling_variant,
 		] = line.split('\t');
-		let ref;
-		try {
-			ref = new Ref(maybe_ref);
-		} catch {
-			continue;
-		}
+		const ref = new Ref(maybe_ref);
+		if (!ref.valid()) continue;
+
 		if (!lastRef?.eql(ref)) word = 1;
 		lastRef = ref;
 
@@ -47,9 +43,9 @@ export async function parse(lineReader, out) {
 				ref,
 				word,
 				hebrew,
-				strongs,
-				grammar,
-				transliteration_en,
+				strongs ?? '',
+				grammar ?? '',
+				transliteration_en ?? '',
 				translation_en,
 			);
 
@@ -95,7 +91,7 @@ export async function parse(lineReader, out) {
 				);
 				unaligned.forEach(u => align(u, morphemes, [
 					'lang',
-					'strongs',
+					'strong',
 					'grammar',
 					'transliteration',
 					'translation',
@@ -106,7 +102,7 @@ export async function parse(lineReader, out) {
 
 			morphemes.forEach(m => {
 				if (!m.grammar && !punctuation[m.text]) console.warn('missing grammar', fmtMorpheme(m));
-				if (!m.strongs) console.warn('missing strongs', fmtMorpheme(m));
+				if (!m.strong) console.warn('missing strong', fmtMorpheme(m));
 
 				out.write(m);
 			});
@@ -118,27 +114,16 @@ export async function parse(lineReader, out) {
 	}
 }
 
-/**
- * @param {string} sources
- * @param {Ref} ref
- * @param {number} word
- * @param {string} text
- * @param {string | undefined} strongs
- * @param {string | undefined} grammar
- * @param {string | undefined} transliteration_en
- * @param {string | undefined} translation_en
- * @param {string | undefined} variant
- */
 export function parseFields(
-	sources,
-	ref,
-	word,
-	text,
-	strongs,
-	grammar,
-	transliteration_en,
-	translation_en,
-	variant,
+	sources: string,
+	ref: Ref,
+	word: number,
+	text: string,
+	strongs: string,
+	grammar: string,
+	transliteration_en: string,
+	translation_en: string,
+	variant?: string,
 ) {
 	const morphSep = '/';
 	// TAHOT does not reliably split morphemes on punctuation, so ignore their splits.
@@ -150,15 +135,15 @@ export function parseFields(
 	const transliterations = transliteration_en.split(morphSep);
 	const translations = translation_en.split(morphSep);
 
-	assert(texts.length, ref);
+	assert(texts.length, ref.toString());
 
-	let lang;
+	let lang: string | undefined;
 	if (grammars[0].startsWith('H')) lang = 'heb';
 	else if (grammars[0].startsWith('A')) lang = 'arc';
 	else if (grammars[0]) throw Error(`unknown grammar prefix ${grammars}`);
 	grammars[0] = grammars[0].substring(1);
 
-	const res = [];
+	const res: Morpheme[] = [];
 	for (let i = 0; i < texts.length; i++) {
 		let text = texts[i].trim();
 		if (!text) {
@@ -174,7 +159,7 @@ export function parseFields(
 			verse: ref.verse,
 			word,
 			lang,
-			strongs: strongss[i]?.replace(/\{|\}/g, '')?.trim(),
+			strong: strongss[i]?.replace(/\{|\}/g, '')?.trim(),
 			text,
 			grammar: grammars[i]?.trim(),
 			transliteration_en: transliterations[i]?.trim(),

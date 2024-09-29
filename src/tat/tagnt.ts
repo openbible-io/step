@@ -1,5 +1,6 @@
 import assert from 'node:assert';
-import {  Ref, splitVariants } from './common.js';
+import { Ref, splitVariants } from './common.ts';
+import { type LineReader, type Out } from '../main.ts';
 
 // Example row
 // Word & Type: Rev.9.16#08=N(k)O
@@ -18,18 +19,15 @@ import {  Ref, splitVariants } from './common.js';
 // Note: 
 
 /**
- *
  * Unfortunately cannot split on morphemes like with Hebrew because grammar splits do not follow
  * the greek word. Some are also out of order like:
  * - κἀμοὶ G1473=P-1DS + G2532=CONJ instead of G2532=CONJ + G1473=P-1DS
- *
- * @param {ReadlineInterface} lineReader
- * @param {fastcsv.CsvFormatterStream<fastcsv.FormatterRow, fastcsv.FormatterRow>} out
  */
-export async function parse(lineReader, out) {
-	let lastRef;
+export async function parse(lineReader: LineReader, out: Out) {
+	let lastRef: Ref | undefined;
 	let word = 0;
 	for await (const line of lineReader) {
+		if (line.startsWith('#')) continue;
 		const [
 			maybe_ref,
 			greek_and_transliteration_en,
@@ -46,19 +44,15 @@ export async function parse(lineReader, out) {
 			alt_strongs,
 			note,
 		] = line.split('\t').map(f => f.trim());
-		let ref;
-		try {
-			ref = new Ref(maybe_ref);
-		} catch {
-			continue;
-		}
+		const ref = new Ref(maybe_ref);
+		if (!ref.valid()) continue;
 		if (!lastRef?.eql(ref)) word = 0;
 		word++;
 		lastRef = ref;
 
 		try {
 			const match = greek_and_transliteration_en.match(/([^\(]*) \(([^\)]*)\)/);
-			assert(match.length == 3, greek_and_transliteration_en);
+			assert(match?.length == 3, greek_and_transliteration_en);
 			const greek = match[1];
 			const transliteration_en = match[2];
 
@@ -114,19 +108,12 @@ export async function parse(lineReader, out) {
 	}
 }
 
-/**
- * @param {Ref} ref
- * @param {string} word
- * @param {string} sources
- * @param {string} greek
- * @param {any} fields
- */
-function parseFields(ref, word, sources, greek, fields) {
-	const strongs = [];
-	const grammars = [];
+function parseFields(ref: Ref, word: number, sources: string, greek: string, fields: any) {
+	const strongs: string[] = [];
+	const grammars: string[] = [];
 	// G2443=CONJ + G5101=I-NSN
 	if (fields.strongs_and_grammars) {
-		fields.strongs_and_grammars.split('+').forEach(sg => {
+		fields.strongs_and_grammars.split('+').forEach((sg: string) => {
 			const split = sg.split('=');
 			assert(split.length == 2, sg);
 			strongs.push(split[0].trim());
@@ -134,10 +121,10 @@ function parseFields(ref, word, sources, greek, fields) {
 		});
 		delete fields.strongs_and_grammars;
 	}
-	const dict_forms = [];
-	const glosses = [];
+	const dict_forms: string[] = [];
+	const glosses: string[] = [];
 	if (fields.dict_form_and_gloss) {
-		fields.dict_form_and_gloss.split('+').forEach(dg => {
+		fields.dict_form_and_gloss.split('+').forEach((dg: string) => {
 			const split = dg.split('=');
 			assert(split.length == 2, dg);
 			dict_forms.push(split[0].trim());
@@ -147,7 +134,7 @@ function parseFields(ref, word, sources, greek, fields) {
 	}
 	if (fields.note?.trim() == '^' || fields.note?.trim() == 'v') fields.note = '';
 
-	const fmtStrongs = s => s
+	const fmtStrongs = (s: string) => s
 		.split(/\.|,/)
 		.map(s => s.trim())
 		.join(',');
@@ -176,7 +163,7 @@ function parseFields(ref, word, sources, greek, fields) {
 	};
 }
 
-function fmtSources(sources) {
+function fmtSources(sources: string) {
 	return sources
 		.split('+')
 		.filter(Boolean)

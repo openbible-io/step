@@ -10,17 +10,15 @@ const character_sets = similar.reduce((acc, cur) => {
 		acc[v].push(cur);
 	});
 	return acc;
-}, {});
+}, {} as { [k: string]: Set<string>[] });
 
 /**
  * Fork of strcmp95 made to work better for Hebrew.
  * http://web.archive.org/web/20100227020019/http://www.census.gov/geo/msb/stand/strcmp.c
  *
- * @param {string} a
- * @param {string} b
- * @returns {number} similarity score between 0 (dissimilar) and 1 (similar)
+ * @returns similarity score between 0 (dissimilar) and 1 (similar)
  */
-export function similarity(a, b) {
+export function similarity(a: string, b: string) {
 	if (!a || !b) return 0;
 
 	a = a.trim().toUpperCase();
@@ -53,7 +51,7 @@ export function similarity(a, b) {
 	let k = 0;
 	for (let i = 0; i < a.length; i++) {
 		if (a_flag[i] === 1) {
-			let j;
+			let j: number;
 			for (j = k; j < b.length; j++) {
 				if (b_flag[j] === 1) {
 					k = j + 1;
@@ -102,10 +100,6 @@ export function similarity(a, b) {
 	}
 
 	return weight;
-}
-
-function consonants(hebrew) {
-	return hebrew.replace(/[^\u05d0-\u05ea]*/g, ''); // Vowels rarely change meaning.
 }
 
 // console.log(similarity(consonants('וֹ֙'), consonants('ה֙')));

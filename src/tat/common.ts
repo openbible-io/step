@@ -1,21 +1,49 @@
 import { books } from '@openbible/core';
-import { similarity } from './jaro-winkler.js';
+import { similarity } from './jaro-winkler.ts';
 
 export class Ref {
-	constructor(str) {
+	book: books.Book;
+	chapter: number;
+	verse: number;
+	sources: string;
+
+	constructor(str: string) {
 		// TAHOT: Gen.1.8(Gen.3.4)#12=L(K)
 		// TAGNT: Act.1.8#12=N(K)O
-		const bcv = str.match(/^([^.]*)\.([^.]*)\.([^.]*)/);
-		this.book = books.fromEnglish(bcv[1]);
-		this.chapter = parseInt(bcv[2]);
-		this.verse = parseInt(bcv[3]);
-		this.sources = str.match(/=(.*)$/)[1];
+		const bcv = str.match(/^([[A-Z][a-z][a-z]*)\.(\d+)\.(\d+)/);
+		try {
+			this.book = books.fromEnglish(bcv?.[1] ?? '');
+		} catch {
+			this.book = 'gen';
+		}
+		this.chapter = parseInt(bcv?.[2] ?? '');
+		this.verse = parseInt(bcv?.[3] ?? '');
+		this.sources = str.match(/=(.*)$/)?.[1] ?? '';
 	}
 
-	eql(other) {
+	eql(other: Ref) {
 		return other.book == this.book && other.chapter == this.chapter && other.verse == this.verse;
 	}
+
+	valid() {
+		return this.book && this.chapter > 0 && this.verse > 0;
+	}
 }
+
+export type Morpheme = {
+	variant?: string,
+	sources: string,
+	book: string,
+	chapter: number,
+	verse: number,
+	word: number,
+	lang?: string,
+	strong: string,
+	text: string,
+	grammar: string,
+	transliteration_en: string,
+	translation_en: string,
+};
 
 export const punctuation = {
 	'־': '9014',
@@ -25,12 +53,8 @@ export const punctuation = {
 
 /**
  * Enrich `m` with data from `morphemes`.
- *
- * @param {ReturnType<parseFields>[0]} m
- * @param {ReturnType<parseFields>} morphemes
- * @param {string[]} fields
  */
-export function align(m, morphemes, fields) {
+export function align(m: Morpheme, morphemes: Morpheme[], fields: string[]) {
 	// We often see punctuation differences
 	if (punctuation[m.text]) {
 		if (fields.includes('strong')) m.strong = punctuation[m.text];
@@ -63,38 +87,20 @@ export function align(m, morphemes, fields) {
 	}
 }
 
-/** @param {string} v */
-export function splitVariants(v) {
+export function splitVariants(v: string) {
 	return v.split(/¦|;/).map(v => v.trim()).filter(Boolean);
 }
 
-export function fmtMorpheme(m) {
+export function fmtMorpheme(m: Morpheme) {
 	let res = `${m.book}.${m.chapter}.${m.verse}`;
 	res += `#${m.word.toString().padStart(2, '0')} ${m.text}`;
 	if (m.variant) res += ` (${m.variant})`;
 	return res;
 }
 
-/** @param {string} str english, hebrew, or greek */
-export function consonants(str) {
+export function consonants(str: string) {
 	return str
 		.replace(/[aeiou]*/gi, '')
 		.replace(/[αεηιουωᾱηῑωῡηω]*/gi, '')
 		.replace(/[^\u05d0-\u05ea]*/g, '')
 }
-
-/**
- * @param {ReturnType<parseFields>} morphemes
- */
-//function* words(morphemes) {
-//	let word_i = 0;
-//	let word = morphemes[word_i].word;
-//	for (let i = 0; i < morphemes.length + 1; i++) {
-//		if (morphemes[i]?.word == word) continue;
-//
-//		yield morphemes.slice(word_i, i);
-//
-//		word = morphemes[i]?.word;
-//		word_i = i;
-//	}
-//}

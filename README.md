@@ -103,4 +103,3 @@ npm run build
 ## Continuous Integration
 The `upstream` branch is a fork pulled daily. If there's a difference will push to master, but
 won't build or release until reviewed.
-

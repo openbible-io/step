@@ -1,28 +1,31 @@
 import { mkdirSync, createWriteStream } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
+import { type Interface } from 'node:readline';
 import { open } from 'node:fs/promises';
 import { books } from '@openbible/core';
 import fastcsv from 'fast-csv';
-import { parse as parseTahot } from './tat/tahot.js';
-import { parse as parseTagnt } from './tat/tagnt.js';
-import { parse as parseTbl } from './dictionaries/tbl.js';
+import { parse as parseTahot } from './tat/tahot.ts';
+import { parse as parseTagnt } from './tat/tagnt.ts';
+import { parse as parseTbl } from './dictionaries/tbl.ts';
 
 const outdir = 'dist';
 
-/** @param {string} fname */
-async function parseFile(fname) {
+export type LineReader = Interface;
+export type Out = fastcsv.CsvFormatterStream<fastcsv.FormatterRow, fastcsv.FormatterRow>;
+
+async function parseFile(fname: string) {
 	const file = await open(fname);
 	const lineReader = file.readLines();
 
 	let firstLine = (await lineReader[Symbol.asyncIterator]().next()).value;
 	if (firstLine.charCodeAt(0) == 0xfeff) firstLine = firstLine.substring(1);
 
-	let outpath;
-	let parser;
+	let outpath: string;
+	let parser: (lineReader: LineReader, out: Out) => Promise<void>;
 
 	const bookRange = basename(fname).split(' ')?.[1];
 	const firstBook = bookRange?.split('-')?.[0]?.toLowerCase();
-	const n = books.protestant.indexOf(firstBook);
+	const n = (books.protestant as unknown as string[]).indexOf(firstBook);
 
 	if (firstLine.startsWith('TAHOT')) {
 		parser = parseTahot;
@@ -44,7 +47,7 @@ async function parseFile(fname) {
 
 	console.log(fname, '->', outpath);
 
-	const out = fastcsv.format({ headers: true, delimiter: '|' });
+	const out = fastcsv.format({ headers: true });
 	mkdirSync(dirname(outpath), { recursive: true });
 	out.pipe(createWriteStream(outpath));
 
